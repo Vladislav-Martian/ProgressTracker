@@ -3,6 +3,9 @@ using Microsoft.OpenApi.Models;
 using ProgressTracker.Contexts;
 using System;
 using ProgressTracker.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ProgressTracker
 {
@@ -37,6 +40,26 @@ namespace ProgressTracker
             {
                 opt.UseInMemoryDatabase(appname);
             });
+            // Authentication
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(o =>
+            {
+                var Key = Encoding.UTF8.GetBytes(Configuration["JWT:Key"]);
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["JWT:Issuer"],
+                    ValidAudience = Configuration["JWT:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Key)
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,10 +73,11 @@ namespace ProgressTracker
                 " ",
                 Configuration["Meta:Version"].ToString())));
 
-            app.UseRouting();
             app.UseHttpsRedirection();
-            
+            app.UseRouting();
+
             // Authorization and others
+            app.UseAuthentication();
             app.UseAuthorization();
 
             // Mapping

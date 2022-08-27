@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using ProgressTracker.Models;
 
 namespace ProgressTracker.Data
 {
@@ -22,9 +23,20 @@ namespace ProgressTracker.Data
             }
         }
 
-        public static void DbSeed(DbContext db)
+        public static void DbSeed(AppDbContext db)
         {
             // just add the content here
+            #region UserDatas
+            db.UserModels.Add(
+                new UserModel() {
+                    Username = "test", 
+                    EmailAddress = "test@nomail.com", 
+                    Password = "test", 
+                    GivenName = "Test", 
+                    Surname = "Test", 
+                    Role = "Administrator" 
+                });
+            #endregion
         }
     }
 }
