@@ -40,9 +40,10 @@ namespace PigeonPizza
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args)
-                .Build()
-                .Run();
+            var built = CreateHostBuilder(args)
+                .Build();
+
+            built.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
