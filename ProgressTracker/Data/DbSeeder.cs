@@ -26,9 +26,12 @@ namespace ProgressTracker.Data
         public static void DbSeed(AppDbContext db)
         {
             // just add the content here
-            #region UserDatas
-            
-            #endregion
+            db.TaskModels.Add(new TaskModel()
+            {
+                Title = "Example",
+                Description = "Example description",
+                CreatedDate = DateTime.Now,
+            });
         }
     }
 }

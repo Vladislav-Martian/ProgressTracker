@@ -36,6 +36,26 @@ namespace ProgressTracker
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(version, new OpenApiInfo { Title = appname, Version = version });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme.",
+                });
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                    {
+                        new OpenApiSecurityScheme {
+                            Reference = new OpenApiReference {
+                                Type = ReferenceType.SecurityScheme,
+                                    Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
             // Main context of db, in-memory based
             services.AddDbContext<AppDbContext>(opt =>
@@ -120,7 +140,6 @@ namespace ProgressTracker
 
             // Database seeding
             DbSeeder.Seed(app);
-            Task.Run(async () => await RoleSeeder.SeedAsync(userManager, roleManager));
         }
 
         #region Helper methods

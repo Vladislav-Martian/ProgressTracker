@@ -8,9 +8,9 @@ namespace ProgressTracker.Data
         public static async Task SeedAsync(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             string adminLogin = "admin@nomail.com";
-            string adminPassword = "0admin";
+            string adminPassword = "0adminpass";
             string userLogin = "user@nomail.com";
-            string userPassword = "0user";
+            string userPassword = "0userpass";
 
             // Add roles
             if (await roleManager.FindByNameAsync(UserRoles.User) == null)
@@ -38,6 +38,7 @@ namespace ProgressTracker.Data
                     await userManager.AddToRoleAsync(admin, UserRoles.Admin);
                 }
             }
+
             if (await userManager.FindByEmailAsync(userLogin) == null)
             {
                 IdentityUser user = new IdentityUser

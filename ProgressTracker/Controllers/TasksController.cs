@@ -4,10 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProgressTracker.Contexts;
 using ProgressTracker.Models;
+using ProgressTracker.Tools;
 
 namespace ProgressTracker.Controllers
 {
@@ -16,15 +18,17 @@ namespace ProgressTracker.Controllers
     public class TasksController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public TasksController(AppDbContext context)
+        public TasksController(AppDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Tasks
         [HttpGet]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<TaskModel>>> GetTaskModels()
         {
             if (_context.TaskModels == null)
@@ -41,7 +45,7 @@ namespace ProgressTracker.Controllers
 
         // GET: api/Tasks/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize]
         public async Task<ActionResult<TaskModel>> GetTaskModel(int id)
         {
             if (_context.TaskModels == null)
@@ -66,7 +70,7 @@ namespace ProgressTracker.Controllers
         // PUT: api/Tasks/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize]
         public async Task<IActionResult> PutTaskModel(int id, TaskModel taskModel)
         {
             if (id != taskModel.Id)
@@ -98,13 +102,31 @@ namespace ProgressTracker.Controllers
         // POST: api/Tasks
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize]
         public async Task<ActionResult<TaskModel>> PostTaskModel(TaskModel taskModel)
         {
             if (_context.TaskModels == null)
             {
                 return Problem("Entity set 'AppDbContext.TaskModels'  is null.");
             }
+
+            var reference = new UserReference() {
+                UserId = User.GetLoggedInUserId<string>()
+            };
+            
+            var entry = _context.UserReferences.Add(reference).Entity;
+            _context.SaveChanges();
+
+            if (taskModel.Creator == null)
+            {
+                taskModel.Creator = entry;
+            }
+
+            if (taskModel.Target == null)
+            {
+                taskModel.Target = entry;
+            }
+
             _context.TaskModels.Add(taskModel);
             await _context.SaveChangesAsync();
 
@@ -113,7 +135,7 @@ namespace ProgressTracker.Controllers
 
         // DELETE: api/Tasks/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,User")]
+        [Authorize]
         public async Task<IActionResult> DeleteTaskModel(int id)
         {
             if (_context.TaskModels == null)

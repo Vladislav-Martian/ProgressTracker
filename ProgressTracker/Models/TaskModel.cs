@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using ProgressTracker.Tools;
 
 namespace ProgressTracker.Models
 {
-    public sealed partial class TaskModel
+    public class TaskModel
     {
         [Key]
         public int Id { get; set; }
@@ -14,9 +16,9 @@ namespace ProgressTracker.Models
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime CreatedDate { get; set; }
-        public IdentityUser? Creator { get; set; }
-        public IdentityUser? Target { get; set; }
-        public IdentityUser? Finisher { get; set; }
+        public UserReference? Creator { get; set; }
+        public UserReference? Target { get; set; }
+        public UserReference? Finisher { get; set; }
 
         public TaskModel()
         {
@@ -32,17 +34,28 @@ namespace ProgressTracker.Models
         /// <summary>
         /// Just about task itself, ignoring dependencies
         /// </summary>
-        private bool IsCompleteItself
+        public bool IsCompleteItself
         {
             get => Finisher != null; // if finisher exists - someone finished task
-        } // Only private, one task itself,without nesting
+        } // One task itself,without nesting
+
         /// <summary>
         ///  is the task fully complete including all dependencies
         /// </summary>
+        [NotMapped]
         public bool IsComplete
         {
-            get => Steps == StepsComplete;
+            get => this.GetStepsCount() == this.GetStepsCompleteCount();
         }
         #endregion
+
+        /// <summary>
+        /// Method override uses database id as hashing parameter
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }
